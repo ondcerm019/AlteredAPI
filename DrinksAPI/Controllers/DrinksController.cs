@@ -27,7 +27,7 @@ namespace DrinksAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Drink>>> GetDrinks()
         {
-            return await _context.Drinks.ToListAsync();
+            return Ok(await _context.Drinks.ToListAsync());
         }
 
         // GET: api/Drinks/5
@@ -103,5 +103,11 @@ namespace DrinksAPI.Controllers
         {
             return _context.Drinks.Any(e => e.Id == id);
         }
+
+
+
+
+
+
     }
 }

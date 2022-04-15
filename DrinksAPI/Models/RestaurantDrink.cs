@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace DrinksAPI.Models
 {
@@ -9,7 +10,9 @@ namespace DrinksAPI.Models
         public double Cost { get; set; }
 
         //Navigation properties
+        [JsonIgnore]
         public Drink? Drink { get; set; }
+        [JsonIgnore]
         public Restaurant? Restaurant { get; set; }
     }
 }

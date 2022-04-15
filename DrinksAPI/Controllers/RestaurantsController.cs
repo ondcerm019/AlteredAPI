@@ -27,7 +27,7 @@ namespace DrinksAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Restaurant>>> GetRestaurants()
         {
-            return await _context.Restaurants.ToListAsync();
+            return Ok(await _context.Restaurants.ToListAsync());
         }
 
         // GET: api/Restaurants/5
@@ -99,9 +99,118 @@ namespace DrinksAPI.Controllers
             return Ok(restaurant);
         }
 
+        
+
+
+
+
+
+        [HttpGet("{id}/drinks")]
+        public async Task<ActionResult<IEnumerable<Drink>>> GetRestaurantDrinks(int id)
+        {
+            var drinks = await _context.rdRelation.Include(e => e.Drink).Where(e => e.RestaurantId == id).Select(e => new { Id = e.DrinkId, e.Drink.Name, e.Cost }).ToListAsync();
+            return Ok(drinks);
+        }
+
+        [HttpPost("{restaurantId}/drinks/{drinkId}")]
+        public async Task<ActionResult<RestaurantDrink>> PostRestaurantDrink(int restaurantId, int drinkId, RestaurantDrinkVM relvm)
+        {
+            if (!RestaurantExists(restaurantId) || !DrinkExists(drinkId))
+            {
+                return NotFound();
+            }
+
+            var rel = new RestaurantDrink { RestaurantId = restaurantId, DrinkId = drinkId, Cost = relvm.Cost };
+            _context.rdRelation.Add(rel);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!RestaurantDrinkExists(restaurantId, drinkId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok(rel);
+        }
+
+        [HttpPut("{restaurantId}/drinks/{drinkId}")]
+        public async Task<IActionResult> PutRestaurantDrink(int restaurantId, int drinkId, RestaurantDrinkVM relvm)
+        {
+            if (!RestaurantExists(restaurantId) || !DrinkExists(drinkId))
+            {
+                return NotFound();
+            }
+
+            var rel = new RestaurantDrink { RestaurantId = restaurantId, DrinkId = drinkId, Cost = relvm.Cost };
+            _context.Entry(rel).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!RestaurantDrinkExists(restaurantId, drinkId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok(rel);
+        }
+
+        [HttpDelete("{restaurantId}/drinks/{drinkId}")]
+        public async Task<IActionResult> DeleteRestaurantDrink(int restaurantId, int drinkId)
+        {
+            var rel = await _context.rdRelation.FindAsync(restaurantId, drinkId);
+            if (rel == null)
+            {
+                return NotFound();
+            }
+
+            _context.rdRelation.Remove(rel);
+            await _context.SaveChangesAsync();
+
+            return Ok(rel);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
         private bool RestaurantExists(int id)
         {
             return _context.Restaurants.Any(e => e.Id == id);
+        }
+
+        private bool DrinkExists(int id)
+        {
+            return _context.Drinks.Any(e => e.Id == id);
+        }
+
+        private bool RestaurantDrinkExists(int restaurantId, int drinkId)
+        {
+            return _context.rdRelation.Any(e => e.RestaurantId == restaurantId && e.DrinkId == drinkId);
         }
     }
 }
