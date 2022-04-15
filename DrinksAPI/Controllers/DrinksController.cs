@@ -99,15 +99,67 @@ namespace DrinksAPI.Controllers
             return Ok(drink);
         }
 
-        private bool DrinkExists(int id)
+
+
+
+        [HttpGet("{id}/restaurants")]
+        public async Task<ActionResult<IEnumerable<Restaurant>>> GetDrinkRestaurants(int id)
         {
-            return _context.Drinks.Any(e => e.Id == id);
+            if (!DrinkExists(id))
+            {
+                return NotFound();
+            }
+
+            var restaurants = await _context.rdRelation.Include(e => e.Restaurant).Where(e => e.DrinkId == id).Select(e => new { Id = e.RestaurantId, e.Restaurant.Name, e.Cost }).ToListAsync();
+            return Ok(restaurants);
+        }
+
+        [HttpGet("{id}/restaurants/averageCost")]
+        public async Task<ActionResult<double?>> GetDrinkRestaurantAverageCost(int id)
+        {
+            if (!DrinkExists(id))
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                return await _context.rdRelation.Where(e => e.DrinkId == id).AverageAsync(e => e.Cost);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        [HttpGet("{id}/restaurants/count")]
+        public async Task<ActionResult<int>> GetDrinkRestaurantCount(int id)
+        {
+            if (!DrinkExists(id))
+            {
+                return NotFound();
+            }
+
+            var restaurantcount = await _context.rdRelation.Where(e => e.DrinkId == id).CountAsync();
+            return Ok(restaurantcount);
         }
 
 
 
 
+        private bool RestaurantExists(int id)
+        {
+            return _context.Restaurants.Any(e => e.Id == id);
+        }
 
+        private bool DrinkExists(int id)
+        {
+            return _context.Drinks.Any(e => e.Id == id);
+        }
 
+        private bool RestaurantDrinkExists(int restaurantId, int drinkId)
+        {
+            return _context.rdRelation.Any(e => e.RestaurantId == restaurantId && e.DrinkId == drinkId);
+        }
     }
 }

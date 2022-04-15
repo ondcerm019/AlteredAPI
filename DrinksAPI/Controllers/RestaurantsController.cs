@@ -104,10 +104,14 @@ namespace DrinksAPI.Controllers
 
 
 
-
         [HttpGet("{id}/drinks")]
         public async Task<ActionResult<IEnumerable<Drink>>> GetRestaurantDrinks(int id)
         {
+            if (!RestaurantExists(id))
+            {
+                return NotFound();
+            }
+
             var drinks = await _context.rdRelation.Include(e => e.Drink).Where(e => e.RestaurantId == id).Select(e => new { Id = e.DrinkId, e.Drink.Name, e.Cost }).ToListAsync();
             return Ok(drinks);
         }
@@ -188,13 +192,17 @@ namespace DrinksAPI.Controllers
         }
 
 
+        [HttpGet("{id}/drinks/count")]
+        public async Task<ActionResult<int>> GetRestaurantDrinkCount(int id)
+        {
+            if (!RestaurantExists(id))
+            {
+                return NotFound();
+            }
 
-
-
-
-
-
-
+            var drinkcount = await _context.rdRelation.Where(e => e.RestaurantId == id).CountAsync();
+            return Ok(drinkcount);
+        }
 
 
 
