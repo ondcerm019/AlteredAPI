@@ -128,7 +128,7 @@ namespace DrinksAPI.Controllers
             }
             catch
             {
-                return null;
+                return NoContent();
             }
         }
 
