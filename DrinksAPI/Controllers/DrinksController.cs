@@ -145,6 +145,17 @@ namespace DrinksAPI.Controllers
         }
 
 
+        [HttpGet("contains/{filterString}")]
+        public async Task<ActionResult<Drink>> GetDrinksFC(string filterString)
+        {
+            return Ok(await _context.Drinks.Where(d => d.Name.Contains(filterString)).ToListAsync());
+        }
+
+        [HttpGet("startsWith/{filterString}")]
+        public async Task<ActionResult<Drink>> GetDrinksFSW(string filterString)
+        {
+            return Ok(await _context.Drinks.Where(d => d.Name.StartsWith(filterString)).ToListAsync());
+        }
 
 
         private bool RestaurantExists(int id)
