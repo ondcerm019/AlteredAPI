@@ -148,13 +148,19 @@ namespace DrinksAPI.Controllers
         [HttpGet("contains/{filterString}")]
         public async Task<ActionResult<Drink>> GetDrinksFC(string filterString)
         {
-            return Ok(await _context.Drinks.Where(d => d.Name.Contains(filterString)).ToListAsync());
+            return Ok(await _context.Drinks.Include(d => d.Restaurants).Where(d => d.Name.Contains(filterString)).Select(d => new { Id = d.Id, Name = d.Name, Count = d.Restaurants.Count }).ToListAsync());
         }
 
         [HttpGet("startsWith/{filterString}")]
         public async Task<ActionResult<Drink>> GetDrinksFSW(string filterString)
         {
-            return Ok(await _context.Drinks.Where(d => d.Name.StartsWith(filterString)).ToListAsync());
+            return Ok(await _context.Drinks.Include(d => d.Restaurants).Where(d => d.Name.StartsWith(filterString)).Select(d => new { Id = d.Id, Name = d.Name, Count = d.Restaurants.Count }).ToListAsync());
+        }
+
+        [HttpGet("WithCount")]
+        public async Task<ActionResult<IEnumerable<Drink>>> GetDrinksWithCount()
+        {
+            return Ok(await _context.Drinks.Include(d => d.Restaurants).Select(d => new { Id = d.Id, Name = d.Name, Count = d.Restaurants.Count }).ToListAsync());
         }
 
 
